@@ -19,7 +19,7 @@ namespace BotNet.Services
         public async Task InstallCommandsAsync()
         {
             _client.MessageReceived += HandleCommandAsync;
-            await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(),services: null);
+            await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
         }
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
@@ -50,7 +50,7 @@ namespace BotNet.Services
             // Error handling.
             if (!result.IsSuccess)
             {
-                await context.Channel.SendMessageAsync(result.ErrorReason);
+                await context.Channel.SendMessageAsync($"{result.ErrorReason} User {Config.CommandPrefix}help to display the commands.");
             }
         }
     }
