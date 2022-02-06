@@ -9,12 +9,12 @@ using Discord.WebSocket;
 
 namespace BotNet.Modules
 {
-    public class BotStatusCommands : ModuleBase<SocketCommandContext>
+    public class BotCommands : ModuleBase<SocketCommandContext>
     {
         private readonly CommandService _commandService;
         private readonly DiscordSocketClient _socketClient;
 
-        public BotStatusCommands(CommandService commandService, DiscordSocketClient socketClient)
+        public BotCommands(CommandService commandService, DiscordSocketClient socketClient)
         {
             _commandService = commandService;
             _socketClient = socketClient;
@@ -29,6 +29,7 @@ namespace BotNet.Modules
 
         [Command("help")]
         [Summary("Retourne la liste de toutes les commandes disponibles.")]
+
         public async Task HelpCommand()
         {
             List<CommandInfo> commands = _commandService.Commands.ToList();
@@ -44,12 +45,25 @@ namespace BotNet.Modules
             foreach (CommandInfo command in commands)
             {
                 // Get the command Summary attribute information
-                string embedFieldText = command.Summary ?? "No description available\n";
-                embedBuilder.AddField(command.Name, embedFieldText);
+                string embedFieldText = command.Summary ?? "Aucune information fournie.";
+                embedBuilder.AddField(command.Name, $"{embedFieldText} \n\nUtilisation : {Config.CommandPrefix}{command.Name}");
             }
 
             await ReplyAsync("Ravi de pouvoir t'aider :nerd:", false, embedBuilder.Build());
+        }
 
+        [Command("avatar")]
+        [Summary("Retourne ton avatar avec une taille de 512 par défaut. \nIl est possible spécifier la taille d'image (puissance de 2 comprise entre 16 et 2048).")]
+        public async Task UserInfosCommand(ushort size = 512)
+        {
+            EmbedBuilder embedBuilder = new EmbedBuilder
+            {
+                Title = $"Et hop ton avatar en {size}x{size} !", 
+                ImageUrl = CDN.GetUserAvatarUrl(Context.User.Id, Context.User.AvatarId, size, ImageFormat.Auto),
+                Color = Color.Green
+            };
+
+            await ReplyAsync(":camera_with_flash:", false, embedBuilder.Build());
         }
     }
 }

@@ -58,7 +58,7 @@ namespace BotNet.Services
             if (!result.IsSuccess)
             {
                 // AJOUTER UN FICHIER DE LOG : result.ErrorReason
-                await context.Channel.SendMessageAsync(" Une erreur est survenue... :smiling_face_with_tear:");
+                await context.Channel.SendMessageAsync($"La commande n'a pas aboutie :smiling_face_with_tear: : {Config.CommandPrefix}help pour afficher l'aide.");
             }
         }
     }
