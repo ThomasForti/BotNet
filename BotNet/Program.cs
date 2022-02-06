@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -12,7 +11,7 @@ namespace BotNet
     class Program
     {
         private DiscordSocketClient _socketClient;
-        private CommandService _commandService;
+        private CommandService _commandsService;
         private CommandHandlerService _commandHandlerService;
         private IServiceProvider _servicesProvider;
 
@@ -31,14 +30,14 @@ namespace BotNet
             {
                 _socketClient = new DiscordSocketClient();
             }
-               
-            _commandService = new CommandService();
+
+            _commandsService = new CommandService();
 
             _servicesProvider = InitializeServiceProvider();
 
-            _commandHandlerService = new CommandHandlerService(_socketClient, _commandService, _servicesProvider);
+            _commandHandlerService = new CommandHandlerService(_socketClient, _commandsService, _servicesProvider);
 
-            new LogService(ref _socketClient, ref _commandService);
+            new LogService(_socketClient, _commandsService);
 
             _socketClient.Ready += () =>
             {
@@ -56,13 +55,14 @@ namespace BotNet
             await Task.Delay(-1);
         }
 
-        // Set a dependency 
+        // Set a custom dependency injector
         public IServiceProvider InitializeServiceProvider() => new ServiceCollection()
                 // Singletons that will be stored in the container of the new dependency injector
                 .AddSingleton(_socketClient)
-                .AddSingleton(_commandService)
+                .AddSingleton(_commandsService)
                 // Service(s) that'll be able to retrieve the singletons by injection in their constructor
                 .AddSingleton<CommandHandlerService>()
+                .AddSingleton<LogService>()
                 .BuildServiceProvider();
     }
 }

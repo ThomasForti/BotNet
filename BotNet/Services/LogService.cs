@@ -9,13 +9,13 @@ namespace BotNet.Services
 {
     public class LogService
     {
-        public LogService(ref DiscordSocketClient client, ref CommandService command)
+        public LogService(DiscordSocketClient client, CommandService command)
         {
-            client.Log += logasync;
-            command.Log += logasync;
+            client.Log += LogAsync;
+            command.Log += LogAsync;
         }
 
-        private Task logasync(LogMessage message)
+        private Task LogAsync(LogMessage message)
         {
             if (message.Exception is CommandException cmdexception)
             {

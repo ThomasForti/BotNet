@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -13,22 +12,23 @@ namespace BotNet.Modules
     public class BotStatusCommands : ModuleBase<SocketCommandContext>
     {
         private readonly CommandService _commandService;
+        private readonly DiscordSocketClient _socketClient;
 
-        public BotStatusCommands(CommandService commandService)
+        public BotStatusCommands(CommandService commandService, DiscordSocketClient socketClient)
         {
             _commandService = commandService;
+            _socketClient = socketClient;
         }
 
         [Command("ping")]
-        [Summary("Retourne la latence moyenne")]
+        [Summary("Retourne la latence moyenne.")]
         public async Task PingCommand()
         {
-            var client = new DiscordSocketClient();
-            await ReplyAsync($"My ping is {client.Latency} ms.");   //TODO: SUSPICIOUS 0 ms RESPONSE
+            await ReplyAsync($"My ping is {_socketClient.Latency} ms.");
         }
 
         [Command("help")]
-        [Summary("Retourne la liste de toutes les commandes disponibles")]
+        [Summary("Retourne la liste de toutes les commandes disponibles.")]
         public async Task HelpCommand()
         {
             List<CommandInfo> commands = _commandService.Commands.ToList();
