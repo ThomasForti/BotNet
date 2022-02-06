@@ -5,6 +5,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using BotNet.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BotNet
 {
@@ -13,6 +14,7 @@ namespace BotNet
         private DiscordSocketClient _socketClient;
         private CommandService _commandService;
         private CommandHandlerService _commandHandlerService;
+        private IServiceProvider _servicesProvider;
 
         public static Task Main(string[] args) => new Program().RunBotAsync();
 
@@ -32,7 +34,9 @@ namespace BotNet
                
             _commandService = new CommandService();
 
-            _commandHandlerService = new CommandHandlerService(_socketClient, _commandService);
+            _servicesProvider = InitializeServiceProvider();
+
+            _commandHandlerService = new CommandHandlerService(_socketClient, _commandService, _servicesProvider);
 
             new LogService(ref _socketClient, ref _commandService);
 
@@ -42,7 +46,7 @@ namespace BotNet
                 return Task.CompletedTask;
             };
 
-            await _commandHandlerService.InstallCommandsAsync();
+            await _commandHandlerService.InitializeCommandsAsync();
             // The token is stored in the user environment variables of Windows for security reasons.
             await _socketClient.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("BotNetToken", EnvironmentVariableTarget.User));
             await _socketClient.StartAsync();
@@ -51,5 +55,14 @@ namespace BotNet
             // -> the program won't stop by himself).
             await Task.Delay(-1);
         }
+
+        // Set a dependency 
+        public IServiceProvider InitializeServiceProvider() => new ServiceCollection()
+                // Singletons that will be stored in the container of the new dependency injector
+                .AddSingleton(_socketClient)
+                .AddSingleton(_commandService)
+                // Service(s) that'll be able to retrieve the singletons by injection in their constructor
+                .AddSingleton<CommandHandlerService>()
+                .BuildServiceProvider();
     }
 }

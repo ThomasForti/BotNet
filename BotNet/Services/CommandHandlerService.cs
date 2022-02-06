@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -9,17 +10,23 @@ namespace BotNet.Services
     {
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
+        private readonly IServiceProvider _services;
 
-        public CommandHandlerService(DiscordSocketClient client, CommandService commands)
+        public CommandHandlerService(
+            DiscordSocketClient client, 
+            CommandService commands, 
+            IServiceProvider services
+            )
         {
             _commands = commands;
             _client = client;
+            _services = services;
         }
 
-        public async Task InstallCommandsAsync()
+        public async Task InitializeCommandsAsync()
         {
             _client.MessageReceived += HandleCommandAsync;
-            await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: null);
+            await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: _services);
         }
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
@@ -44,13 +51,14 @@ namespace BotNet.Services
 
             // Execute the command with the command context we just
             // created, along with the service provider for precondition checks.
-            var result = await _commands.ExecuteAsync(context: context, argPos: argPos, services: null);
+            var result = await _commands.ExecuteAsync(context: context, argPos: argPos, services: _services);
 
 
             // Error handling.
             if (!result.IsSuccess)
             {
-                await context.Channel.SendMessageAsync($"{result.ErrorReason} User {Config.CommandPrefix}help to display the commands.");
+                // AJOUTER UN FICHIER DE LOG : result.Reason
+                await context.Channel.SendMessageAsync("Une erreur est survenue... :smiling_face_with_tear:");
             }
         }
     }
